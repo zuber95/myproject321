@@ -1,0 +1,259 @@
+RMAN> show all;
+
+using target database control file instead of recovery catalog
+RMAN configuration parameters for database with db_unique_name ODSP are:
+CONFIGURE RETENTION POLICY TO REDUNDANCY 1; # default
+CONFIGURE BACKUP OPTIMIZATION OFF; # default
+CONFIGURE DEFAULT DEVICE TYPE TO DISK; # default
+CONFIGURE CONTROLFILE AUTOBACKUP ON; # default
+CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '%F'; # default
+CONFIGURE DEVICE TYPE DISK PARALLELISM 1 BACKUP TYPE TO BACKUPSET; # default
+CONFIGURE DATAFILE BACKUP COPIES FOR DEVICE TYPE DISK TO 1; # default
+CONFIGURE ARCHIVELOG BACKUP COPIES FOR DEVICE TYPE DISK TO 1; # default
+CONFIGURE MAXSETSIZE TO UNLIMITED; # default
+CONFIGURE ENCRYPTION FOR DATABASE OFF; # default
+CONFIGURE ENCRYPTION ALGORITHM 'AES128'; # default
+CONFIGURE COMPRESSION ALGORITHM 'BASIC' AS OF RELEASE 'DEFAULT' OPTIMIZE FOR LOAD TRUE ; # default
+CONFIGURE RMAN OUTPUT TO KEEP FOR 7 DAYS; # default
+CONFIGURE ARCHIVELOG DELETION POLICY TO NONE; # default
+CONFIGURE SNAPSHOT CONTROLFILE NAME TO '/u01/app/oracle/product/12.2.0/dbhome_1/dbs/snapcf_odsp.f'; # default
+
+RMAN> CONFIGURE MAXSETSIZE TO 2g;
+
+new RMAN configuration parameters:
+CONFIGURE MAXSETSIZE TO 2 G;
+new RMAN configuration parameters are successfully stored
+
+RMAN> CONFIGURE CONTROLFILE AUTOBACKUP ON;
+
+new RMAN configuration parameters:
+CONFIGURE CONTROLFILE AUTOBACKUP ON;
+new RMAN configuration parameters are successfully stored
+
+
+restoration step
+============================
+RMAN> run
+2> {
+3> allocate channel ch1 device type disk format '/u02/backup/full_%t_%U.bkp';
+4> allocate channel ch2 device type disk format '/u02/backup/full_%t_%U.bkp';
+5>  backup database ;
+7>  backup current controlfile format '/u02/backup/control_%t_%U.bkp';
+8> allocate channel ch4 device type disk format '/u02/backup/archie_%t_%U.bkp';
+9> backup archivelog all;
+10> release channel ch1;
+11> release channel ch2;
+13> release channel ch4;
+14> }
+
+SQL> create pfile='/u02/backup/initodsp.ora' from spfile;
+
+File created.
+
+create necessary directory 
+
+edit the pfile and change the necessary directory 
+
+[oracle@google software]$ export ORACLE_SID=test
+[oracle@google software]$ sqlplus / as sysdba
+SQL> startup nomount;
+ORACLE instance started.
+
+Total System Global Area 1275068416 bytes
+Fixed Size                  8620272 bytes
+Variable Size             335546128 bytes
+Database Buffers          922746880 bytes
+Redo Buffers                8155136 bytes
+SQL> select instance_name,status from v$instance;
+
+INSTANCE_NAME    STATUS
+---------------- ------------
+test             STARTED
+
+SQL> show parameter control
+
+NAME                                 TYPE        VALUE
+------------------------------------ ----------- ------------------------------
+control_file_record_keep_time        integer     7
+control_files                        string      /u01/app/oracle/oradata/test/c
+                                                 ontrol01.ctl, /u01/app/oracle/
+                                                 oradata/test/control02.ctl
+control_management_pack_access       string      DIAGNOSTIC+TUNING
+
+RMAN> restore controlfile from 'backup location';
+
+RMAN> alter database mount;
+
+rman>report schema;
+
+
+RMAN> run
+2> {
+3> set newname for datafile 1 to '/u01/app/oracle/oradata/test/system01.dbf';
+4> set newname for datafile 3 to '/u01/app/oracle/oradata/test/sysaux01.dbf';
+5> set newname for datafile 4 to '/u01/app/oracle/oradata/test/undotbs01.dbf';
+6> set newname for datafile 7 to '/u01/app/oracle/oradata/test/users01.dbf';
+7> restore database preview;
+8> }
+
+RMAN> run
+2> {
+3> set newname for datafile 1 to '/u01/app/oracle/oradata/test/system01.dbf';
+4> set newname for datafile 3 to '/u01/app/oracle/oradata/test/sysaux01.dbf';
+5> set newname for datafile 4 to '/u01/app/oracle/oradata/test/undotbs01.dbf';
+6> set newname for datafile 7 to '/u01/app/oracle/oradata/test/users01.dbf';
+7> restore database preview;
+8> }
+
+RMAN> run
+2> {
+3> set newname for datafile 1 to '/u01/app/oracle/oradata/test/system01.dbf';
+4> set newname for datafile 3 to '/u01/app/oracle/oradata/test/sysaux01.dbf';
+5> set newname for datafile 4 to '/u01/app/oracle/oradata/test/undotbs01.dbf';
+6> set newname for datafile 7 to '/u01/app/oracle/oradata/test/users01.dbf';
+7> restore database;
+8> }
+
+SQL> select member,group# from v$logfile;
+
+MEMBER
+--------------------------------------------------------------------------------
+    GROUP#
+----------
+/u01/app/oracle/oradata/odsp/redo03.log
+         3
+
+/u01/app/oracle/oradata/odsp/redo02.log
+         2
+
+/u01/app/oracle/oradata/odsp/redo01.log
+         1
+
+SQL> alter database rename file '/u01/app/oracle/oradata/odsp/redo01.log' to '/u01/app/oracle/oradata/test/redo01.log';
+
+Database altered.
+
+SQL> alter database rename file '/u01/app/oracle/oradata/odsp/redo02.log' to '/u01/app/oracle/oradata/test/redo02.log';
+
+Database altered.
+
+SQL> alter database rename file '/u01/app/oracle/oradata/odsp/redo03.log' to '/u01/app/oracle/oradata/test/redo03.log';
+
+Database altered.
+
+RMAN> report schema;
+
+RMAN-06139: warning: control file is not current for REPORT SCHEMA
+Report of database schema for database with db_unique_name TEST
+
+List of Permanent Datafiles
+===========================
+File Size(MB) Tablespace           RB segs Datafile Name
+---- -------- -------------------- ------- ------------------------
+1    810      SYSTEM               ***     /u01/app/oracle/oradata/odsp/system01.dbf
+3    500      SYSAUX               ***     /u01/app/oracle/oradata/odsp/sysaux01.dbf
+4    65       UNDOTBS1             ***     /u01/app/oracle/oradata/odsp/undotbs01.dbf
+7    5        USERS                ***     /u01/app/oracle/oradata/odsp/users01.dbf
+
+List of Temporary Files
+=======================
+File Size(MB) Tablespace           Maxsize(MB) Tempfile Name
+---- -------- -------------------- ----------- --------------------
+1    20       TEMP                 32767       /u01/app/oracle/oradata/odsp/temp01.dbf
+
+RMAN> switch database to copy;
+
+datafile 1 switched to datafile copy "/u01/app/oracle/oradata/test/system01.dbf"
+datafile 3 switched to datafile copy "/u01/app/oracle/oradata/test/sysaux01.dbf"
+datafile 4 switched to datafile copy "/u01/app/oracle/oradata/test/undotbs01.dbf"
+datafile 7 switched to datafile copy "/u01/app/oracle/oradata/test/users01.dbf"
+
+RMAN> report schema;
+
+RMAN-06139: warning: control file is not current for REPORT SCHEMA
+Report of database schema for database with db_unique_name TEST
+
+List of Permanent Datafiles
+===========================
+File Size(MB) Tablespace           RB segs Datafile Name
+---- -------- -------------------- ------- ------------------------
+1    810      SYSTEM               ***     /u01/app/oracle/oradata/test/system01.dbf
+3    490      SYSAUX               ***     /u01/app/oracle/oradata/test/sysaux01.dbf
+4    65       UNDOTBS1             ***     /u01/app/oracle/oradata/test/undotbs01.dbf
+7    5        USERS                ***     /u01/app/oracle/oradata/test/users01.dbf
+
+List of Temporary Files
+=======================
+File Size(MB) Tablespace           Maxsize(MB) Tempfile Name
+---- -------- -------------------- ----------- --------------------
+1    20       TEMP                 32767       /u01/app/oracle/oradata/odsp/temp01.dbf
+
+RMAN> recover database;
+
+Starting recover at 26-FEB-22
+using channel ORA_DISK_1
+
+starting media recovery
+
+channel ORA_DISK_1: starting archived log restore to default destination
+channel ORA_DISK_1: restoring archived log
+archived log thread=1 sequence=3
+channel ORA_DISK_1: reading from backup piece /u02/backup/full_1097688370_1g0mqp9i_1_1.bkp
+channel ORA_DISK_1: piece handle=/u02/backup/full_1097688370_1g0mqp9i_1_1.bkp tag=TAG20220226T172610
+channel ORA_DISK_1: restored backup piece 1
+channel ORA_DISK_1: restore complete, elapsed time: 00:00:01
+archived log file name=/u01/app/oracle/oradata/arch/1_3_1097172497.dbf thread=1 sequence=3
+unable to find archived log
+archived log thread=1 sequence=4
+RMAN-00571: ===========================================================
+RMAN-00569: =============== ERROR MESSAGE STACK FOLLOWS ===============
+RMAN-00571: ===========================================================
+RMAN-03002: failure of recover command at 02/26/2022 17:54:58
+RMAN-06054: media recovery requesting unknown archived log for thread 1 with sequence 4 and starting SCN of 2119321
+
+RMAN> exit
+
+
+Recovery Manager complete.
+[oracle@google test]$ sqlplus / as sysdba
+
+SQL*Plus: Release 12.2.0.1.0 Production on Sat Feb 26 17:55:14 2022
+
+Copyright (c) 1982, 2016, Oracle.  All rights reserved.
+
+
+Connected to:
+Oracle Database 12c Enterprise Edition Release 12.2.0.1.0 - 64bit Production
+
+SQL> alter database open;
+alter database open
+*
+ERROR at line 1:
+ORA-01589: must use RESETLOGS or NORESETLOGS option for database open
+
+
+SQL> alter database open RESETLOGS;
+
+Database altered.
+
+SQL> select name,open_mode from v$database;
+
+NAME      OPEN_MODE
+--------- --------------------
+ODSP      READ WRITE
+
+SQL> select instance_name,status from v$instance;
+
+INSTANCE_NAME    STATUS
+---------------- ------------
+test             OPEN
+
+SQL> show parameter uniq
+
+NAME                                 TYPE        VALUE
+------------------------------------ ----------- ------------------------------
+db_unique_name                       string      test
+SQL>
+
+
+

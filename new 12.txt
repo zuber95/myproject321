@@ -1,0 +1,4 @@
+export ORACLE_SID=PLMS
+export ORACLE_HOME=/u01/oracle/product
+export ORACLE_BASE=/u01/oracle/base
+export PATH=$PATH:$ORACLE_HOME/bin

@@ -1,0 +1,40 @@
+$ crontab -e
+
+0 13 * * 0 /bin/bash /localbackup/scripts/DBfullbkpscript.sh
+
+vi DBfullbkpscript.sh
+
+export ORACLE_HOME=/local/app/oracle/product/12.1.0/db_1
+export PATH=$ORACLE_HOME/bin:$PATH
+export ORACLE_SID=DB1
+rman target / log=/localbackup/FCRDB/fullbkp.log`date +%y%m%d%H%M`  <<EOF
+run
+{
+allocate channel d1 device type disk;
+allocate channel d2 device type disk;
+allocate channel d3 device type disk;
+allocate channel d4 device type disk;
+allocate channel d5 device type disk;
+allocate channel d6 device type disk;
+allocate channel d7 device type disk;
+allocate channel d8 device type disk;
+backup as compressed backupset incremental level 0 database  format '/localbackup/FCRDB/fcrdb_Level_0_%s_%t_%p.bkp';
+backup as compressed backupset archivelog all format '/localbackup/FCRDB/fcrdb_archive_arc_%s_%t_%p.bkp';
+backup current controlfile format '/localbackup/FCRDB/fcrdb_control_file_%s_%t_%p.bkp';
+REPORT OBSOLETE REDUNDANCY 1;
+DELETE NOPROMPT OBSOLETE REDUNDANCY 1;
+crosscheck backup;
+crosscheck archivelog all;
+delete noprompt expired backup;
+delete force noprompt archivelog all completed before 'sysdate-7';
+release channel d1;
+release channel d2;
+release channel d3;
+release channel d4;
+release channel d5;
+release channel d6;
+release channel d7;
+release channel d8;
+}
+exit;
+EOF

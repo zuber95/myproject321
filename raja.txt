@@ -1,0 +1,357 @@
+login as: cloud
+cloud@192.168.44.146's password:
+Last login: Mon May 16 10:40:16 2022 from 192.168.44.129
+
+[cloud@iconic ~]$ df -h
+Filesystem              Size  Used Avail Use% Mounted on
+devtmpfs                3.8G     0  3.8G   0% /dev
+tmpfs                   3.8G     0  3.8G   0% /dev/shm
+tmpfs                   3.8G  9.9M  3.8G   1% /run
+tmpfs                   3.8G     0  3.8G   0% /sys/fs/cgroup
+/dev/mapper/ol-root      25G  4.5G   21G  18% /
+/dev/sda1              1014M  217M  798M  22% /boot
+/dev/mapper/ol-oracle    25G   33M   25G   1% /oracle
+/dev/mapper/ol-oradata   16G   33M   16G   1% /oradata
+/dev/mapper/ol-home     5.0G   37M  5.0G   1% /home
+tmpfs                   773M  4.0K  773M   1% /run/user/42
+tmpfs                   773M   68K  773M   1% /run/user/1000
+tmpfs                   773M     0  773M   0% /run/user/0
+
+[cloud@iconic ~]$ cd /oracle
+[cloud@iconic oracle]$ ls -lrt
+total 0
+[cloud@iconic oracle]$ mkdir dj
+mkdir: cannot create directory ‘dj’: Permission denied
+[cloud@iconic oracle]$ cd
+[cloud@iconic ~]$ pwd
+/home/cloud
+[cloud@iconic ~]$ su -
+Password:
+
+[root@iconic ~]#  chown -R 777 /oracle
+[root@iconic ~]#  chmod -R 777 /oracle
+[root@iconic ~]# su  - cloud
+Last login: Mon May 16 11:07:28 IST 2022 from 192.168.44.129 on pts/2
+[cloud@iconic ~]$ df -h
+Filesystem              Size  Used Avail Use% Mounted on
+devtmpfs                3.8G     0  3.8G   0% /dev
+tmpfs                   3.8G     0  3.8G   0% /dev/shm
+tmpfs                   3.8G  9.9M  3.8G   1% /run
+tmpfs                   3.8G     0  3.8G   0% /sys/fs/cgroup
+/dev/mapper/ol-root      25G  4.5G   21G  18% /
+/dev/sda1              1014M  217M  798M  22% /boot
+/dev/mapper/ol-oracle    25G   33M   25G   1% /oracle
+/dev/mapper/ol-oradata   16G   33M   16G   1% /oradata
+/dev/mapper/ol-home     5.0G   37M  5.0G   1% /home
+tmpfs                   773M  4.0K  773M   1% /run/user/42
+tmpfs                   773M   68K  773M   1% /run/user/1000
+tmpfs                   773M     0  773M   0% /run/user/0
+
+[cloud@iconic ~]$ cd  /oracle
+[cloud@iconic oracle]$ mkdir dj
+[cloud@iconic oracle]$ cd
+[cloud@iconic ~]$ \df -h
+Filesystem              Size  Used Avail Use% Mounted on
+devtmpfs                3.8G     0  3.8G   0% /dev
+tmpfs                   3.8G     0  3.8G   0% /dev/shm
+tmpfs                   3.8G  9.9M  3.8G   1% /run
+tmpfs                   3.8G     0  3.8G   0% /sys/fs/cgroup
+/dev/mapper/ol-root      25G  4.5G   21G  18% /
+/dev/sda1              1014M  217M  798M  22% /boot
+/dev/mapper/ol-oracle    25G   33M   25G   1% /oracle
+/dev/mapper/ol-oradata   16G   33M   16G   1% /oradata
+/dev/mapper/ol-home     5.0G   37M  5.0G   1% /home
+tmpfs                   773M  4.0K  773M   1% /run/user/42
+tmpfs                   773M   68K  773M   1% /run/user/1000
+tmpfs                   773M     0  773M   0% /run/user/0
+[cloud@iconic ~]$ cd /oradata
+[cloud@iconic oradata]$ mkdir wada
+mkdir: cannot create directory ‘wada’: Permission denied
+[cloud@iconic oradata]$ cd
+[cloud@iconic ~]$ su -
+Password:
+Last login: Mon May 16 11:21:21 IST 2022 on pts/2
+[root@iconic ~]# chmod -R 777 /oradata
+[root@iconic ~]# chown -R 777 /oradata
+[root@iconic ~]# su - cloud
+Last login: Mon May 16 11:22:10 IST 2022 on pts/2
+[cloud@iconic ~]$ df -h
+Filesystem              Size  Used Avail Use% Mounted on
+devtmpfs                3.8G     0  3.8G   0% /dev
+tmpfs                   3.8G     0  3.8G   0% /dev/shm
+tmpfs                   3.8G  9.9M  3.8G   1% /run
+tmpfs                   3.8G     0  3.8G   0% /sys/fs/cgroup
+/dev/mapper/ol-root      25G  4.5G   21G  18% /
+/dev/sda1              1014M  217M  798M  22% /boot
+/dev/mapper/ol-oracle    25G   33M   25G   1% /oracle
+/dev/mapper/ol-oradata   16G   33M   16G   1% /oradata
+/dev/mapper/ol-home     5.0G   37M  5.0G   1% /home
+tmpfs                   773M  4.0K  773M   1% /run/user/42
+tmpfs                   773M   68K  773M   1% /run/user/1000
+tmpfs                   773M     0  773M   0% /run/user/0
+[cloud@iconic ~]$ cd
+[cloud@iconic ~]$ cd /oradata
+[cloud@iconic oradata]$ mkdir wada
+[cloud@iconic oradata]$ ls -lrt
+total 0
+drwxrwxr-x. 2 cloud cloud 6 May 16 11:29 wada
+[cloud@iconic oradata]$ cd
+[cloud@iconic ~]$ cd /home
+[cloud@iconic home]$ mkdir home
+mkdir: cannot create directory ‘home’: Permission denied
+[cloud@iconic home]$ ls =lrt
+ls: cannot access =lrt: No such file or directory
+[cloud@iconic home]$ cd
+[cloud@iconic ~]$ cd /home
+[cloud@iconic home]$ mkdir raja
+mkdir: cannot create directory ‘raja’: Permission denied
+[cloud@iconic home]$ su -
+Password:
+Last login: Mon May 16 11:26:28 IST 2022 on pts/2
+[root@iconic ~]# chmod -R 777 /home
+[root@iconic ~]# chown -R 777/home
+chown: missing operand after ‘777/home’
+Try 'chown --help' for more information.
+[root@iconic ~]# chown -R 777 /home
+[root@iconic ~]# su -cloud
+bash: loud: command not found
+[root@iconic ~]# su - cloud
+Last login: Mon May 16 11:27:54 IST 2022 on pts/2
+[cloud@iconic ~]$ cd
+[cloud@iconic ~]$ df -h
+Filesystem              Size  Used Avail Use% Mounted on
+devtmpfs                3.8G     0  3.8G   0% /dev
+tmpfs                   3.8G     0  3.8G   0% /dev/shm
+tmpfs                   3.8G  9.9M  3.8G   1% /run
+tmpfs                   3.8G     0  3.8G   0% /sys/fs/cgroup
+/dev/mapper/ol-root      25G  4.5G   21G  18% /
+/dev/sda1              1014M  217M  798M  22% /boot
+/dev/mapper/ol-oracle    25G   33M   25G   1% /oracle
+/dev/mapper/ol-oradata   16G   33M   16G   1% /oradata
+/dev/mapper/ol-home     5.0G   37M  5.0G   1% /home
+tmpfs                   773M  4.0K  773M   1% /run/user/42
+tmpfs                   773M   68K  773M   1% /run/user/1000
+tmpfs                   773M     0  773M   0% /run/user/0
+[cloud@iconic ~]$ cd
+[cloud@iconic ~]$ cd /home
+[cloud@iconic home]$ mkdir raja
+[cloud@iconic home]$ ls -lrt
+total 4
+drwxrwxrwx. 16   777 cloud 4096 May 16 11:10 cloud
+drwxrwxr-x.  2 cloud cloud    6 May 16 11:37 raja
+[cloud@iconic home]$ cd
+[cloud@iconic ~]$ ls -la
+total 32
+drwxrwxrwx. 16 777 cloud 4096 May 16 11:10 .
+drwxrwxrwx.  4 777 root    31 May 16 11:37 ..
+-rwxrwxrwx.  1 777 cloud   18 Jan 26  2018 .bash_logout
+-rwxrwxrwx.  1 777 cloud  193 Jan 26  2018 .bash_profile
+-rwxrwxrwx.  1 777 cloud  231 Jan 26  2018 .bashrc
+drwxrwxrwx. 13 777 cloud 4096 May 16 10:38 .cache
+drwxrwxrwx. 14 777 cloud 4096 May 16 10:38 .config
+drwxrwxrwx.  3 777 cloud   25 May 16 10:37 .dbus
+drwxrwxrwx.  2 777 cloud    6 May 16 10:38 Desktop
+drwxrwxrwx.  2 777 cloud    6 May 16 10:38 Documents
+drwxrwxrwx.  2 777 cloud    6 May 16 10:38 Downloads
+-rwxrwxrwx.  1 777 cloud   16 May 16 10:37 .esd_auth
+-rwxrwxrwx.  1 777 cloud  314 May 16 10:37 .ICEauthority
+drwxrwxrwx.  3 777 cloud   19 May 16 10:37 .local
+drwxrwxrwx.  4 777 cloud   39 May 16 10:21 .mozilla
+drwxrwxrwx.  2 777 cloud    6 May 16 10:38 Music
+drwxrwxrwx.  2 777 cloud    6 May 16 10:38 Pictures
+drwxrwxrwx.  2 777 cloud    6 May 16 10:38 Public
+drwxrwxrwx.  2 777 cloud   18 May 16 11:11 rocj
+drwxrwxrwx.  2 777 cloud    6 May 16 10:38 Templates
+drwxrwxrwx.  2 777 cloud    6 May 16 10:38 Videos
+[cloud@iconic ~]$ cat .bash_profile
+# .bash_profile
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+        . ~/.bashrc
+fi
+
+# User specific environment and startup programs
+
+PATH=$PATH:$HOME/.local/bin:$HOME/bin
+
+export PATH
+[cloud@iconic ~]$ cd
+[cloud@iconic ~]$ pwd
+/home/cloud
+[cloud@iconic ~]$ df 0h
+df: ‘0h’: No such file or directory
+[cloud@iconic ~]$ df -h
+Filesystem              Size  Used Avail Use% Mounted on
+devtmpfs                3.8G     0  3.8G   0% /dev
+tmpfs                   3.8G     0  3.8G   0% /dev/shm
+tmpfs                   3.8G  9.9M  3.8G   1% /run
+tmpfs                   3.8G     0  3.8G   0% /sys/fs/cgroup
+/dev/mapper/ol-root      25G  4.5G   21G  18% /
+/dev/sda1              1014M  217M  798M  22% /boot
+/dev/mapper/ol-oracle    25G   33M   25G   1% /oracle
+/dev/mapper/ol-oradata   16G   33M   16G   1% /oradata
+/dev/mapper/ol-home     5.0G   37M  5.0G   1% /home
+tmpfs                   773M  4.0K  773M   1% /run/user/42
+tmpfs                   773M   68K  773M   1% /run/user/1000
+tmpfs                   773M     0  773M   0% /run/user/0
+[cloud@iconic ~]$ cd /oracle
+[cloud@iconic oracle]$ ls -lrt
+total 0
+drwxrwxr-x. 2 cloud cloud 6 May 16 11:22 dj
+[cloud@iconic oracle]$ cd dj
+[cloud@iconic dj]$ ls -lrt
+total 0
+[cloud@iconic dj]$ cat >tata
+[cloud@iconic dj]$ cat >tata
+[cloud@iconic dj]$ ls -lrt
+total 0
+-rw-rw-r--. 1 cloud cloud 0 May 16 11:42 tata
+[cloud@iconic dj]$ cat tata
+[cloud@iconic dj]$  cat >tata
+djhdjfhf
+dscisdjcd
+skdncsdklnc
+kdvkdvjcd
+jdcjkdsbcd
+klxcnsdklcn
+lscjkdc
+dlcjksnadkcj
+dsjcndkjlc
+dckhdioafc
+dlskchdic
+dchwdoic
+dcowkdhcpwo
+dcihwepochjwe
+wdklchwdkc
+wdcnwkoc
+[cloud@iconic dj]$ cat tata
+djhdjfhf
+dscisdjcd
+skdncsdklnc
+kdvkdvjcd
+jdcjkdsbcd
+klxcnsdklcn
+lscjkdc
+dlcjksnadkcj
+dsjcndkjlc
+dckhdioafc
+dlskchdic
+dchwdoic
+dcowkdhcpwo
+dcihwepochjwe
+wdklchwdkc
+wdcnwkoc
+[cloud@iconic dj]$ head -5 tata
+djhdjfhf
+dscisdjcd
+skdncsdklnc
+kdvkdvjcd
+jdcjkdsbcd
+[cloud@iconic dj]$ tail -5 tata
+dchwdoic
+dcowkdhcpwo
+dcihwepochjwe
+wdklchwdkc
+wdcnwkoc
+[cloud@iconic dj]$ cd..
+bash: cd..: command not found...
+[cloud@iconic dj]$ cd ..
+[cloud@iconic oracle]$ ps -ef/grep tata
+error: unsupported SysV option
+
+Usage:
+ ps [options]
+
+ Try 'ps --help <simple|list|output|threads|misc|all>'
+  or 'ps --help <s|l|o|t|m|a>'
+ for additional help text.
+
+For more details see ps(1).
+[cloud@iconic oracle]$ ls -lrt
+total 0
+drwxrwxr-x. 2 cloud cloud 18 May 16 11:42 dj
+[cloud@iconic oracle]$ df -h
+Filesystem              Size  Used Avail Use% Mounted on
+devtmpfs                3.8G     0  3.8G   0% /dev
+tmpfs                   3.8G     0  3.8G   0% /dev/shm
+tmpfs                   3.8G  9.9M  3.8G   1% /run
+tmpfs                   3.8G     0  3.8G   0% /sys/fs/cgroup
+/dev/mapper/ol-root      25G  4.5G   21G  18% /
+/dev/sda1              1014M  217M  798M  22% /boot
+/dev/mapper/ol-oracle    25G   33M   25G   1% /oracle
+/dev/mapper/ol-oradata   16G   33M   16G   1% /oradata
+/dev/mapper/ol-home     5.0G   37M  5.0G   1% /home
+tmpfs                   773M  4.0K  773M   1% /run/user/42
+tmpfs                   773M   68K  773M   1% /run/user/1000
+tmpfs                   773M     0  773M   0% /run/user/0
+[cloud@iconic oracle]$ ps -ef/grep oradata
+error: unsupported SysV option
+
+Usage:
+ ps [options]
+
+ Try 'ps --help <simple|list|output|threads|misc|all>'
+  or 'ps --help <s|l|o|t|m|a>'
+ for additional help text.
+
+For more details see ps(1).
+[cloud@iconic oracle]$  ls -lrt
+total 0
+drwxrwxr-x. 2 cloud cloud 18 May 16 11:42 dj
+[cloud@iconic oracle]$ free -m
+              total        used        free      shared  buff/cache   available
+Mem:           7725         949        5664          12        1110        6572
+Swap:          8063           0        8063
+[cloud@iconic oracle]$ :wq
+bash: :wq: command not found...
+[cloud@iconic oracle]$ :cd
+bash: :cd: command not found...
+[cloud@iconic oracle]$ cd
+[cloud@iconic ~]$ cd /oradata
+[cloud@iconic oradata]$ cd dj
+-bash: cd: dj: No such file or directory
+[cloud@iconic oradata]$ ls -lrt
+total 0
+drwxrwxr-x. 2 cloud cloud 6 May 16 11:29 wada
+[cloud@iconic oradata]$ cd wada
+[cloud@iconic wada]$ ls -lrt
+total 0
+[cloud@iconic wada]$ cd /home
+[cloud@iconic home]$ ls -lrt
+total 4
+drwxrwxrwx. 16   777 cloud 4096 May 16 11:10 cloud
+drwxrwxr-x.  2 cloud cloud    6 May 16 11:37 raja
+[cloud@iconic home]$ cd raja
+[cloud@iconic raja]$ ls -lrt
+total 0
+[cloud@iconic raja]$ cd
+[cloud@iconic ~]$ cd /oracle
+[cloud@iconic oracle]$ ls -lrt
+total 0
+drwxrwxr-x. 2 cloud cloud 18 May 16 11:42 dj
+[cloud@iconic oracle]$ cd dj
+[cloud@iconic dj]$ ls -lrt
+total 4
+-rw-rw-r--. 1 cloud cloud 172 May 16 11:44 tata
+[cloud@iconic dj]$ vi tata
+[cloud@iconic dj]$ cat tata
+djhdjfhf
+dscisdjcd
+skdncsdklnc
+kdvkdvjcd
+jdcjkdsbcd
+klxcnsdklcn
+lscjkdc
+dlcjksnadkcj
+dsjcndkjlc
+dckhdioafc
+dlskchdic
+dchwdoic
+dcowkdhcpwo
+dcihwepochjwe
+wdklchwdkc
+fvfbvf
+wdcnwkoc
+
+[cloud@iconic dj]$

@@ -1,0 +1,669 @@
+Please find goldengate configuration Steps.
+
+===========================================================================================================
+Goldengate Schema Repication Oracle to Oracle
+===========================================================================================================
+
+Step-1  Read Goldengate Certification Matrix and Install Approriate Version of GG on Source as well as Target OS/DB
+
+While installation of GG use GUI
+
+
+Step-2 Create Tablespace on Source & Target DB
+
+--- Source
+-------------
+create tablespace goldengate datafile '/ORACLE/GGDATA/TESTDB3/goldengate_01.dbf' size 50m autoextend on next 100m maxsize 31g;
+
+--- Target
+-------------
+create tablespace goldengate datafile '/ORACLE/GGDATA/AQURPT/goldengate_01.dbf' size 50m autoextend on next 100m maxsize 31g;
+
+
+» Create an OGG User
+=====================
+Step-3 Create GG User and provide appropriate privileges on Source & Target DB
+
+--- Source  Pending
+=====================
+create user gguser identified by Welc0me1 default tablespace goldengate quota unlimited on goldengate temporary tablespace TEMP profile Default;
+
+grant connect,resource, dba, select any dictionary, select any table, create table, flashback any table to gguser;
+grant execute on dbms_flashback to gguser;
+grant execute on utl_file to gguser;
+grant CREATE SESSION, ALTER SESSION to gguser;
+exec dbms_goldengate_auth.grant_admin_privilege('GGUSER');  Pending
+
+--- Target
+===========
+create user gguser identified by Welc0me1 default tablespace goldengate quota unlimited on goldengate temporary tablespace TEMP profile Default;
+
+grant connect,resource, dba, select any dictionary, select any table, create table, flashback any table to gguser;
+grant execute on dbms_flashback to gguser;
+grant execute on utl_file to gguser;
+grant CREATE SESSION, ALTER SESSION to gguser;
+exec dbms_goldengate_auth.grant_admin_privilege('GGUSER' );
+
+
+
+Step-3
+========
+---Verify that the database is running in ARCHIVELOG, Force Login & Suplemental login enabled mode.
+===================================================================================================
+select SUPPLEMENTAL_LOG_DATA_MIN,FORCE_LOGGING,log_mode from v$database;
+
+SUPPLEME FORCE_LOGGING                           LOG_MODE
+-------- --------------------------------------- ------------
+YES      YES                                     ARCHIVELOG
+
+SQL>
+ALTER DATABASE ADD SUPPLEMENTAL LOG DATA;
+
+ALTER DATABASE FORCE LOGGING;
+
+ALTER SYSTEM SWITCH LOGFILE;
+
+select SUPPLEMENTAL_LOG_DATA_MIN,FORCE_LOGGING,log_mode from v$database;
+
+SUPPLEME FOR LOG_MODE
+-------- --- ------------
+YES      YES ARCHIVELOG
+
+Step-4 Enable DB Parameter "ENABLE_GOLDENGATE_REPLICATION"
+===========================================================
+--- Source  
+-----------
+show parameter ENABLE_GOLDENGATE_REPLICATION
+ALTER SYSTEM SET ENABLE_GOLDENGATE_REPLICATION=TRUE SCOPE=BOTH;
+show parameter ENABLE_GOLDENGATE_REPLICATION
+
+--- Target
+============
+show parameter ENABLE_GOLDENGATE_REPLICATION
+ALTER SYSTEM SET ENABLE_GOLDENGATE_REPLICATION=TRUE SCOPE=BOTH;
+show parameter ENABLE_GOLDENGATE_REPLICATION
+
+Step-5 Set DB Parameter and Take restart to effect.
+====================================================
+--- Source   Pending
+====================
+alter system set sga_max_size=20G scope=spfile;
+alter system set sga_target=18G scope=spfile;
+alter system set STREAMS_POOL_SIZE=7500M scope=spfile;
+
+--- Target
+=============
+alter system set sga_max_size=10G scope=spfile;
+alter system set sga_target=10G scope=spfile;
+alter system set STREAMS_POOL_SIZE=3750M scope=spfile;
+
+Step-6 Create tablespace and add additional datafile for appropriate Sizing in Target Db Before Import
+=======================================================================================================
+desc dba_data_files
+--------------------
+TABLESPACE_NAME                FILE_NAME                                                         AUT      BYTES   MAXBYTES
+------------------------------ ----------------------------------------------------------------- --- ---------- ----------
+SYSTEM                         /ORACLE/datafile1/TESTDB/TESTDB/system01.dbf                  YES 2.71289063 31.9999847
+SYSAUX                         /ORACLE/datafile1/TESTDB/TESTDB/sysaux01.dbf                  YES 4.24316406 31.9999847
+USER_DATA                      /ORACLE/datafile1/TESTDB/TESTDB/tbs_user_data_01.dbf          YES 31.9999847 31.9999847
+USERS                          /ORACLE/datafile1/TESTDB/TESTDB/users01.dbf                   YES .005126953 31.9999847
+USER_IDX                       /ORACLE/datafile3/TESTDB/tbs_user_idx_01.dbf                    NO   .09765625          0
+UNDOTBS1                       /ORACLE/datafile1/TESTDB/TESTDB/undotbs01.dbf                 YES 12.1132813 31.9999847
+USER_IDX                       /ORACLE/datafile1/TESTDB/TESTDB/tbs_user_idx_02.dbf           YES .004882813 31.9999847
+USER_RECN                      /ORACLE/datafile1/TESTDB/TESTDB/tbs_user_recn_01.dbf          YES .004882813 31.9999847
+USER_TRANS                     /ORACLE/datafile1/TESTDB/TESTDB/tbs_user_trans_01.dbf         NO   .09765625          0
+USER_TRANS                     /ORACLE/datafile1/TESTDB/TESTDB/tbs_user_trans_02.dbf         NO   .09765625          0
+USER_TRANS                     /ORACLE/datafile1/TESTDB/TESTDB/tbs_user_trans_03.dbf         YES .004882813 31.9999847
+TBL_SPACE_DIMTSPAY             /ORACLE/datafile1/TESTDB/TESTDB/tbs_dimtspay_services_01.dbf  YES .004882813 31.9999847
+TBLS_TRANS                     /ORACLE/datafile1/TESTDB/TESTDB/tbs_tbls_trans_01.dbf         NO   .09765625          0
+TBLS_TRANS                     /ORACLE/datafile1/TESTDB/TESTDB/tbs_tbls_trans_02.dbf         NO   .09765625          0
+TBLS_TRANS                     /ORACLE/datafile1/TESTDB/TESTDB/tbs_tbls_trans_03.dbf         YES .004882813 31.9999847
+ETOLLREAD                      /ORACLE/datafile1/TESTDB/TESTDB/ETOLLREAD.dbf                 NO   .09765625          0
+USER_DATA                      /ORACLE/datafile3/TESTDB/tbs_user_data_02.dbf                   YES 31.9990234 31.9999847
+USER_DATA                      /ORACLE/datafile1/TESTDB/TESTDB/tbs_user_data_03.dbf          YES 31.9990234 31.9999847
+SYSTEM                         /ORACLE/datafile3/TESTDB/system02.dbf                           YES .791137695 31.9999847
+USER_DATA                      /ORACLE/datafile3/TESTDB/tbs_user_data_04.dbf                   YES 31.9990234 31.9999847
+SYSAUX                         /ORACLE/datafile3/TESTDB/sysaux02.dbf                           YES 1.45507813 31.9999847
+USERS                          /ORACLE/datafile3/TESTDB/users02.dbf                            YES  .48828125 31.9999847
+USER_DATA                      /ORACLE/datafile3/TESTDB/tbs_user_data_05.dbf                   YES 13.1132813 31.9999847
+USER_DATA                      /ORACLE/datafile3/TESTDB/tbs_user_data_06.dbf                   YES 6.48828125 31.9999847
+GOLDENGATE                     /ORACLE/datafile3/TESTDB/goldengate_01.dbf                      YES .004882813 31.9999847
+
+25 rows selected.
+
+create tablespace USER_DATA datafile '/ORACLE/GGDATA/TESTDB3/user_data_01.dbf' SIZE 5M AUTOEXTEND ON;
+create tablespace TBL_SPACE_DIMTSPAY datafile '/ORACLE/GGDATA/TESTDB3/tbl_space_dimtspay_01.dbf' SIZE 5M AUTOEXTEND ON;
+create tablespace USER_RECN datafile '/ORACLE/GGDATA/TESTDB3/user_recn_01.dbf' SIZE 5M AUTOEXTEND ON;
+create tablespace ETOLLREAD datafile '/ORACLE/GGDATA/TESTDB3/etollread_01.dbf' SIZE 5M AUTOEXTEND ON;
+create tablespace USER_IDX datafile '/ORACLE/GGDATA/TESTDB3/user_idx_01.dbf' SIZE 5M AUTOEXTEND ON;
+create tablespace USER_TRANS datafile '/ORACLE/GGDATA/TESTDB3/user_trans_01.dbf' SIZE 5M AUTOEXTEND ON;
+create tablespace TBLS_TRANS datafile '/ORACLE/GGDATA/TESTDB3/tbls_trans_01.dbf' SIZE 5M AUTOEXTEND ON;
+
+alter tablespace TBLS_TRANS add datafile '/ORACLE/GGDATA/AQURPT/tbls_trans_02.dbf' SIZE 5M AUTOEXTEND ON;
+alter tablespace TBLS_TRANS add datafile '/ORACLE/GGDATA/AQURPT/tbls_trans_03.dbf' SIZE 5M AUTOEXTEND ON;
+alter tablespace USER_DATA add datafile '/ORACLE/GGDATA/AQURPT/USER_DATA_02.dbf' SIZE 5M AUTOEXTEND ON;
+alter tablespace USER_DATA add datafile '/ORACLE/GGDATA/AQURPT/USER_DATA_03.dbf' SIZE 5M AUTOEXTEND ON;
+alter tablespace USER_DATA add datafile '/ORACLE/GGDATA/AQURPT/USER_DATA_04.dbf' SIZE 5M AUTOEXTEND ON;
+alter tablespace USER_DATA add datafile '/ORACLE/GGDATA/AQURPT/USER_DATA_05.dbf' SIZE 5M AUTOEXTEND ON;
+alter tablespace USER_DATA add datafile '/ORACLE/GGDATA/AQURPT/USER_DATA_06.dbf' SIZE 5M AUTOEXTEND ON;
+alter tablespace USER_DATA add datafile '/ORACLE/GGDATA/AQURPT/USER_DATA_07.dbf' SIZE 5M AUTOEXTEND ON;
+alter tablespace USER_DATA add datafile '/ORACLE/GGDATA/AQURPT/USER_DATA_08.dbf' SIZE 5M AUTOEXTEND ON;
+alter tablespace USER_DATA add datafile '/ORACLE/GGDATA/AQURPT/USER_DATA_09.dbf' SIZE 5M AUTOEXTEND ON;
+alter tablespace USER_IDX add datafile '/ORACLE/GGDATA/AQURPT/user_idx_02.dbf' SIZE 5M AUTOEXTEND ON;
+alter tablespace USER_TRANS add datafile '/ORACLE/GGDATA/AQURPT/user_trans_02.dbf' SIZE 5M AUTOEXTEND ON;
+alter tablespace USERS add datafile '/ORACLE/GGDATA/AQURPT/users02.dbf' SIZE 5M AUTOEXTEND ON;
+
+/*********
+
+1)DOWNREPORTMINUTES minutes | DOWNREPORTHOURS hours
+===================================================
+minutes
+The frequency, in minutes, to report processes that are not running.
+
+hours
+The frequency, in hours, to report processes that are not running.
+
+2)To report on running processes, use the UPREPORT parameter.
+==============================================================
+3)Use the LAGCRITICALSECONDS, LAGCRITICALMINUTES, or LAGCRITICALHOURS parameter to specify a lag threshold that is considered critical, and to force a warning message to the error log when the threshold is reached. This parameter affects Extract and Replicat processes on the local system.
+
+**********/
+
+
+» Create a Manager Parameter file on source system
+=========================================================
+Step-7 Configure the Manager Parameter file
+=============================================
+---Source MGR  
+=================
+PORT 7809
+DYNAMICPORTLIST 20000-20099
+PURGEOLDEXTRACTS ./dirdat/*, USECHECKPOINTS, MINKEEPHOURS 72
+Autostart Extract E*
+AUTORESTART Extract *, RETRIES 3, WAITMINUTES 10, RESETMINUTES 60
+DOWNREPORTMINUTES 15
+--- DOWNCRITICAL
+LAGCRITICALSECONDS 10
+LAGINFOMINUTES 0
+LAGREPORTMINUTES 15
+ACCESSRULE, PROG *, IPADDR x.x.x.x, ALLOW
+ACCESSRULE, PROG *, IPADDR *, DENY
+
+---Target MGR
+=====================
+Port 7810
+DynamicPortList 7811-7820
+PurgeOldExtracts ./dirdat/pa*, UseCheckPoints, MinKeepHours 72    
+PurgeOldExtracts ./dirdat/pi*, UseCheckPoints, MinKeepHours 72    
+Autostart Replicat R*
+AUTORESTART Replicat *,  RETRIES 3, WAITMINUTES 10, RESETMINUTES 60
+DOWNREPORTMINUTES 15
+--- DOWNCRITICAL
+LAGCRITICALSECONDS 10
+LAGINFOMINUTES 0
+LAGREPORTMINUTES 15
+ACCESSRULE, PROG *, IPADDR x.x.x.x, ALLOW
+ACCESSRULE, PROG *, IPADDR x.x.x.x, ALLOW
+ACCESSRULE, PROG *, IPADDR *, DENY
+
+
+
+» Create an Extract parameter file on source system.
+====================================================
+Step-8 Configure the Extrace Parameter file
+============================================
+view param EINTAAC
+==================
+
+Extract eintaac
+SETENV (ORACLE_SID='TESTDB')
+userid gguser, password Welc0me1
+DISCARDFILE ./dirrpt/eapps.dsc, APPEND
+DISCARDROLLOVER AT 01:00 ON SUNDAY
+TRANLOGOPTIONS INTEGRATEDPARAMS (max_sga_size 2048, parallelism 3)
+Exttrail ./dirdat/aq
+STATOPTIONS REPORTFETCH
+REPORTCOUNT every 10 minutes, RATE
+REPORTROLLOVER AT 01:00 ON SUNDAY
+LOGALLSUPCOLS
+UPDATERECORDFORMAT COMPACT
+DDL INCLUDE MAPPED
+DDLOPTIONS REPORT
+TABLE AFCS.*;
+TABLE CARD.*;
+TABLE COMN.*;
+TABLE RECN.*;
+TABLE ACCT.*;
+TABLE DIMTSPAY_SERVICES.*;
+TABLE APPL.*;
+TABLE SECT.*;
+TABLE ACQR.*;
+TABLE PORTAL.*;
+TABLE MIS.*;
+TABLE STLMT.*;
+TABLE KMS.*;
+TABLE ETOLLREAD.*;
+
+
+view param EINTAIS
+===================
+Extract eintais
+SETENV (ORACLE_SID='TESTDB2')
+userid gguser, password Welc0me1
+DISCARDFILE ./dirrpt/eapps.dsc, APPEND
+DISCARDROLLOVER AT 01:00 ON SUNDAY
+TRANLOGOPTIONS INTEGRATEDPARAMS (max_sga_size 2048, parallelism 3)
+Exttrail ./dirdat/is
+STATOPTIONS REPORTFETCH
+REPORTCOUNT every 10 minutes, RATE
+REPORTROLLOVER AT 01:00 ON SUNDAY
+LOGALLSUPCOLS
+UPDATERECORDFORMAT COMPACT
+DDL INCLUDE MAPPED
+DDLOPTIONS REPORT
+TABLE AFCS.*;
+TABLE CARD.*;
+TABLE COMN.*;
+TABLE RECN.*;
+TABLE ACCT.*;
+TABLE DIMTSPAY_SERVICES.*;
+TABLE APPL.*;
+TABLE SECT.*;
+TABLE ACQR.*;
+TABLE PORTAL.*;
+TABLE MIS.*;
+TABLE STLMT.*;
+TABLE KMS.*;
+TABLE ETOLLREAD.*;
+
+
+Step-9 Configure the Pump Parameter file
+=========================================
+GGSCI (TTTTTTTTTT) 3> view param PINTAAC
+=========================================
+Extract  pintaac
+SETENV (ORACLE_SID='TESTDB')
+userid gguser, password Welc0me1
+rmthost x.x.x.x, mgrport 7908
+PASSTHRU
+rmttrail ./dirdat/pa
+TABLE AFCS.*;
+TABLE CARD.*;
+TABLE COMN.*;
+TABLE RECN.*;
+TABLE ACCT.*;
+TABLE DIMTSPAY_SERVICES.*;
+TABLE APPL.*;
+TABLE SECT.*;
+TABLE ACQR.*;
+TABLE PORTAL.*;
+TABLE MIS.*;
+TABLE STLMT.*;
+TABLE KMS.*;
+TABLE ETOLLREAD.*;
+
+GGSCI (TTTTTTTTTT) 3> view param PINTAIS
+==========================================
+Extract  PINTAIS
+SETENV (ORACLE_SID='TESTDB2')
+userid gguser, password Welc0me1
+rmthost x.x.x.x, mgrport 7908
+PASSTHRU
+rmttrail ./dirdat/pi
+TABLE AFCS.*;
+TABLE CARD.*;
+TABLE COMN.*;
+TABLE RECN.*;
+TABLE ACCT.*;
+TABLE DIMTSPAY_SERVICES.*;
+TABLE APPL.*;
+TABLE SECT.*;
+TABLE ACQR.*;
+TABLE PORTAL.*;
+TABLE MIS.*;
+TABLE STLMT.*;
+TABLE KMS.*;
+TABLE ETOLLREAD.*;
+
+
+» Add supplemental log data to all schemas being replicated for update operations.
+==================================================================================
+
+add schematrandata AFCS PREPARECSN
+add schematrandata CARD PREPARECSN
+add schematrandata COMN PREPARECSN
+add schematrandata RECN PREPARECSN
+add schematrandata ACCT PREPARECSN
+add schematrandata DIMTSPAY_SERVICES PREPARECSN
+add schematrandata APPL PREPARECSN
+add schematrandata SECT PREPARECSN
+add schematrandata ACQR PREPARECSN
+add schematrandata PORTAL PREPARECSN
+add schematrandata MIS PREPARECSN
+add schematrandata STLMT PREPARECSN
+add schematrandata KMS PREPARECSN
+add schematrandata ETOLLREAD PREPARECSN
+
+GGSCI>dblogin useridalias ogg_user
+=====================================
+
+Add TranData AFCS.* ALLCOLS
+Add TranData CARD.* ALLCOLS
+Add TranData COMN.* ALLCOLS
+Add TranData RECN.* ALLCOLS
+Add TranData ACCT.* ALLCOLS
+Add TranData DIMTSPAY_SERVICES.* ALLCOLS
+Add TranData APPL.* ALLCOLS
+Add TranData SECT.* ALLCOLS
+Add TranData ACQR.* ALLCOLS
+Add TranData PORTAL.* ALLCOLS
+Add TranData MIS.* ALLCOLS
+Add TranData STLMT.* ALLCOLS
+Add TranData KMS.* ALLCOLS
+Add TranData ETOLLREAD.* ALLCOLS
+====================================
+Info TranData AFCS.*
+=====================
+add schematrandata AFCS ALLCOLS
+add schematrandata CARD ALLCOLS
+add schematrandata COMN ALLCOLS
+add schematrandata RECN ALLCOLS
+add schematrandata ACCT ALLCOLS
+add schematrandata DIMTSPAY_SERVICES ALLCOLS
+add schematrandata APPL ALLCOLS
+add schematrandata SECT ALLCOLS
+add schematrandata ACQR ALLCOLS
+add schematrandata PORTAL ALLCOLS
+add schematrandata MIS ALLCOLS
+add schematrandata STLMT ALLCOLS
+add schematrandata KMS ALLCOLS
+add schematrandata ETOLLREAD ALLCOLS
+
+
+» Register Extract in database
+==============================
+GGSCI>dblogin useridalias ogg_user
+
+GGSCI>add schematrandata ETOLLREAD
+
+GGSCI>register extract eintaac database
+
+» Set up an initial Extract checkpoint on the source system.
+==============================================================
+GGSCI>add extract eintaac, integrated tranlog, begin now        ("Tranlog" For Integrated GG)
+
+» Create Local Trail file
+==========================
+GGSCI>add exttrail ./dirdat/aq, extract eintaac, megabytes 10
+
+» Create an Extract Pump parameter file on source system
+========================================================
+GGSCI>add extract PINTAAC, exttrailsource ./dirdat/aq
+
+» Create Remote Trail File
+==========================
+GGSCI>add rmttrail ./dirdat/pa, extract PINTAAC, megabytes 10
+
+
+
+» Register Extract in database
+===============================
+GGSCI>dblogin useridalias ogg_user
+
+GGSCI>add schematrandata ETOLLREAD
+
+GGSCI>register extract EINTAIS database
+
+GGSCI>add extract EINTAIS, integrated tranlog, begin now
+
+GGSCI>add exttrail ./dirdat/is, extract EINTAIS, megabytes 10
+
+GGSCI>add extract PINTAIS, exttrailsource ./dirdat/is
+
+GGSCI>add rmttrail ./dirdat/pi, extract PINTAIS, megabytes 10
+
+ 
+ 
+ 
+» Create a Replicat parameter file on target system.
+ ===================================================
+Step-10 Configure replicate parameter file
+============================================
+~~~~~ New
+GGSCI (FFFFFFF) 5>
+
+Replicat rintaac
+SETENV(ORACLE_SID='AQURPT')
+DBOPTIONS INTEGRATEDPARAMS (COMMIT_SERIALIZATION FULL, _ARRAY_OPERATION N, PARALLELISM 2, MAX_PARALLELISM 2)
+--- ASSUMETARGETDEFS is ignored in OGG 12.2
+ASSUMETARGETDEFS
+DiscardFile ./dirrpt/arpdw.dsc, APPEND
+--- User login
+userid gguser, password Welc0me1
+REPORTCOUNT EVERY 30 MINUTES, RATE
+REPORTROLLOVER AT 01:00 ON SUNDAY
+DISCARDROLLOVER AT 01:00 ON SUNDAY
+DDL INCLUDE ALL
+DDLOPTIONS REPORT
+MAP AFCS.*,TARGET AFCS.*;
+MAP CARD.*,TARGET CARD.*;
+MAP COMN.*,TARGET COMN.*;
+MAP RECN.*,TARGET RECN.*;
+MAP ACCT.*,TARGET ACCT.*;
+MAP DIMTSPAY_SERVICES.*,TARGET DIMTSPAY_SERVICES.*;
+MAP APPL.*,TARGET APPL.*;
+MAP SECT.*,TARGET SECT.*;
+MAP ACQR.*,TARGET ACQR.*;
+MAP PORTAL.*,TARGET PORTAL.*;
+MAP MIS.*,TARGET MIS.*;
+MAP STLMT.*,TARGET STLMT.*;
+MAP KMS.*,TARGET KMS.*;
+MAP ETOLLREAD.*,TARGET ETOLLREAD.*;
+~~~~~
+
+
+GGSCI (FFFFFFF) 5>
+
+Replicat rintais
+SETENV(ORACLE_SID='TESTDB3')
+DBOPTIONS INTEGRATEDPARAMS (COMMIT_SERIALIZATION FULL, _ARRAY_OPERATION N, PARALLELISM 2, MAX_PARALLELISM 2)
+--- ASSUMETARGETDEFS is ignored in OGG 12.2
+ASSUMETARGETDEFS
+DiscardFile ./dirrpt/irpdw.dsc, APPEND
+userid gguser, password Welc0me1
+REPORTCOUNT EVERY 30 MINUTES, RATE
+REPORTROLLOVER AT 01:00 ON SUNDAY
+DISCARDROLLOVER AT 01:00 ON SUNDAY
+--- DDL Parameters
+DDL INCLUDE ALL
+DDLOPTIONS REPORT
+MAP AFCS.*,TARGET AFCS.*;
+MAP CARD.*,TARGET CARD.*;
+MAP COMN.*,TARGET COMN.*;
+MAP RECN.*,TARGET RECN.*;
+MAP ACCT.*,TARGET ACCT.*;
+MAP DIMTSPAY_SERVICES.*,TARGET DIMTSPAY_SERVICES.*;
+MAP APPL.*,TARGET APPL.*;
+MAP SECT.*,TARGET SECT.*;
+MAP ACQR.*,TARGET ACQR.*;
+MAP PORTAL.*,TARGET PORTAL.*;
+MAP MIS.*,TARGET MIS.*;
+MAP STLMT.*,TARGET STLMT.*;
+MAP KMS.*,TARGET KMS.*;
+MAP ETOLLREAD.*,TARGET ETOLLREAD.*;
+
+
+
+
+» Add Checkpoint Table before start Replicat on Target System
+
+EDIT PARAMS ./GLOBALS
+
+GGSCHEMA gguser
+CHECKPOINTTABLE gguser.chkpt
+
+ADD CHECKPOINTTABLE gguser.chkpt
+
+
+
+~~~~~~~~~ Abbreviated terms
+GGSCI> DBlogin userid gguser, password Welc0me1
+
+» Create a checkpoint table
+
+GGSCI> ADD CHECKPOINTTABLE gguser.chkpt
+
+» Set up an initial Replicat checkpoint on target system.
+
+GGSCI> Add Replicat rintaac, Integrated,  exttrail ./dirdat/pa, CHECKPOINTTABLE gguser.chkpt  
+GGSCI> Add Replicat rintais, Integrated,  exttrail ./dirdat/pi, CHECKPOINTTABLE gguser.chkpt  
+~~~~~~~~~
+
+
+GGSCI (TTTTTTTTTT) 1> dblogin userid gguser, password Welc0me1
+Successfully logged into database.
+
+GGSCI (TTTTTTTTTT as gguser@TESTDB3) 2> edit param rintais
+
+GGSCI (TTTTTTTTTT as gguser@TESTDB3) 3> DBlogin userid gguser, password Welc0me1
+Successfully logged into database.
+
+GGSCI (TTTTTTTTTT as gguser@TESTDB3) 4> ADD CHECKPOINTTABLE gguser.chkpt
+
+Successfully created checkpoint table gguser.chkpt.
+
+GGSCI (TTTTTTTTTT as gguser@TESTDB3) 5> Add Replicat rintais, Integrated,  exttrail ./dirdat/pi, CHECKPOINTTABLE gguser.chkpt
+REPLICAT (Integrated) added.
+
+
+
+
+Start OGG Processes
+
+» Start Manager on both source and target systems
+
+» Start Extract on source system
+
+» Start Extract Pump on source system
+
+
+
+
+Step-11 Take the current scn of the database
+
+set num20;
+select current_scn from v$database;
+
+1073951976
+
+
+Step-12 Take the expdp backup of the database, check current SCN of the database and take expdp backup.
+
+set lines 150 pages 3000;
+COLUMN owner FORMAT A25;
+COLUMN DIRECTORY_NAME for a35;
+COLUMN DIRECTORY_PATH for a65;
+select * from dba_directories;
+
+
+--- For Standalone DB
+nohup  expdp  \'/ as sysdba\'  directory=EXPDPNEW dumpfile=Expdp_TESTDB_Schemas_%u.dmp logfile=Expdp_TESTDB_Schemas.log schemas=AFCS,CARD,COMN,RECN,ACCT,DIMTSPAY_SERVICES,APPL,SECT,ACQR,PORTAL,MIS,STLMT,KMS,ETOLLREAD compression=all parallel=8 flashback_scn=1073951976 &   '
+
+--- For RAC DB
+nohup  expdp  \'/ as sysdba\'  directory=ETOLLISS_dump dumpfile=Expdp_ETOLLISS_Schemas_20191123_%U.dmp logfile=Expdp_ETOLLISS_Schemas_20191123.log schemas=AFCS,CARD,COMN,RECN,ACCT,DIMTSPAY_SERVICES,APPL,SECT,ACQR,PORTAL,MIS,STLMT,KMS,ETOLLREAD,READUSER_ACS,ACQ_READDATABASE,ACQ_APPL compression=all parallel=8 flashback_scn=11603578215 cluster=N exclude=statistics
+
+
+
+Step-13 Get Profile & Role information from source Database and Create in Target Database
+
+create PROFILE "APP_USER"
+    LIMIT
+ COMPOSITE_LIMIT UNLIMITED
+ SESSIONS_PER_USER 99999
+ CPU_PER_SESSION UNLIMITED
+ CPU_PER_CALL UNLIMITED
+ LOGICAL_READS_PER_SESSION UNLIMITED
+ LOGICAL_READS_PER_CALL UNLIMITED
+ IDLE_TIME 129600
+ CONNECT_TIME UNLIMITED
+ PRIVATE_SGA UNLIMITED
+ FAILED_LOGIN_ATTEMPTS 3
+ PASSWORD_LIFE_TIME 180
+ PASSWORD_REUSE_TIME 365
+ PASSWORD_REUSE_MAX 10  
+ PASSWORD_VERIFY_FUNCTION NULL
+ PASSWORD_LOCK_TIME 1
+ PASSWORD_GRACE_TIME 3;
+
+CREATE ROLE "ROLE_DBUSER" NOT IDENTIFIED;
+GRANT CREATE ANY TYPE TO "ROLE_DBUSER";
+GRANT CREATE CLUSTER TO "ROLE_DBUSER";
+GRANT CREATE PROCEDURE TO "ROLE_DBUSER";
+GRANT CREATE SEQUENCE TO "ROLE_DBUSER";
+GRANT CREATE SESSION TO "ROLE_DBUSER";
+GRANT CREATE SYNONYM TO "ROLE_DBUSER";
+GRANT CREATE TABLE TO "ROLE_DBUSER";
+GRANT CREATE TRIGGER TO "ROLE_DBUSER";
+GRANT CREATE VIEW TO "ROLE_DBUSER";
+GRANT DEBUG ANY PROCEDURE TO "ROLE_DBUSER";
+GRANT DEBUG CONNECT SESSION TO "ROLE_DBUSER";
+GRANT EXECUTE ON "SYS"."DBMS_SNAPSHOT" TO "ROLE_DBUSER";
+
+
+Step-14 Transfer the backup and Import in Target Database
+
+nohup  impdp  \'/ as sysdba\' directory=IMPDP_NEW dumpfile=Expdp_TESTDB_Schemas_%u.dmp logfile=Expdp_TESTDB_Schemas.log schemas=AFCS,CARD,COMN,RECN,ACCT,DIMTSPAY_SERVICES,APPL,SECT,ACQR,PORTAL,MIS,STLMT,KMS,ETOLLREAD parallel=8 TABLE_EXISTS_ACTION=REPLACE &
+
+
+
+Step-15     Query for checking LOB Segments in Source database
+
+select col.owner as schema_name,
+       col.table_name,
+       count(*) as column_count
+from sys.all_tab_columns col
+inner join sys.all_tables t on col.owner = t.owner
+                              and col.table_name = t.table_name
+where col.data_type in ('BLOB', 'CLOB', 'NCLOB', 'BFILE')
+-- excluding some Oracle maintained schemas
+and col.owner not in ('ANONYMOUS','CTXSYS','DBSNMP','EXFSYS', 'LBACSYS',
+   'MDSYS', 'MGMT_VIEW','OLAPSYS','OWBSYS','ORDPLUGINS', 'ORDSYS','OUTLN',
+   'SI_INFORMTN_SCHEMA','SYS','SYSMAN','SYSTEM', 'TSMSYS','WK_TEST',
+   'WKPROXY','WMSYS','XDB','APEX_040000', 'APEX_PUBLIC_USER','DIP', 'WKSYS',
+   'FLOWS_30000','FLOWS_FILES','MDDATA', 'ORACLE_OCM', 'XS$NULL',
+   'SPATIAL_CSW_ADMIN_USR', 'SPATIAL_WFS_ADMIN_USR', 'PUBLIC','APEX_040200','AUDSYS','OJVMSYS')  
+group by col.owner,col.table_name
+order by col.owner,col.table_name;
+
+
+Step-16
+"Grant execute on sys.dbms_lob to "scott" (Application Schemas)" privilege to Source User in Target DB Before Starting replication (Target)
+
+Grant below permission to ogg user to resolve the issue:
+
+SQL> execute DBMS_STREAMS_AUTH.GRANT_ADMIN_PRIVILEGE('OGG');
+
+The error can also happen if the Replicat db user does not have execute privilege on dbms_reputil2 and dbms_lob
+
+SQL> select * From dba_tab_privs where table_name in ('DBMS_REPUTIL2', 'DBMS_LOB');
+
+The missing privileges can be granted as following
+
+grant execute on sys.dbms_lob to "GGS" (Application Schemas)
+
+--->
+grant execute on sys.dbms_lob to AFCS,CARD,COMN,RECN,ACCT,DIMTSPAY_SERVICES,APPL,SECT,ACQR,PORTAL,MIS,STLMT,KMS,ETOLLREAD,READUSER_ACS,ISS_READDATABASE;
+
+
+
+
+Step-17 Transfer the backup and Import in Target Database
+
+START REPLICAT rintaac, AFTERCSN 1058199974
+
+START REPLICAT RINTAIS, AFTERCSN 584012560
+
+info all
+
+select * from v$archived_log where first_change# >= 2615109 and deleted = 'YES';
+select * from dba_registered_archived_log where first_scn = 2615109;

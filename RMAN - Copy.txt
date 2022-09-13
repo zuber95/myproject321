@@ -1,0 +1,522 @@
+SQL>
+SQL> archive log list;
+Database log mode              Archive Mode
+Automatic archival             Enabled
+Archive destination            USE_DB_RECOVERY_FILE_DEST
+Oldest online log sequence     47
+Next log sequence to archive   50
+Current log sequence           50
+SQL>
+SQL>
+
+
+
+
+SQL>
+SQL> shu immediate;
+Database closed.
+Database dismounted.
+ORACLE instance shut down.
+SQL>
+
+
+
+SQL>
+SQL> startup mount;
+ORACLE instance started.
+
+Total System Global Area  893386752 bytes
+Fixed Size                  2930560 bytes
+Variable Size             834668672 bytes
+Database Buffers           50331648 bytes
+Redo Buffers                5455872 bytes
+Database mounted.
+SQL>
+SQL>
+SQL>
+
+
+SQL> alter database noarchivelog;
+
+Database altered.
+
+SQL>
+
+
+
+SQL> archive log list;
+Database log mode              No Archive Mode
+Automatic archival             Disabled
+Archive destination            USE_DB_RECOVERY_FILE_DEST
+Oldest online log sequence     47
+Current log sequence           50
+SQL>
+SQL>
+
+
+
+How to convert noarchivelog to archivelog mode ?
+
+[oracle@iconic ~]$ sqlplus "/ as sysdba"
+
+SQL*Plus: Release 12.1.0.2.0 Production on Sat Nov 20 12:08:11 2021
+
+Copyright (c) 1982, 2014, Oracle.  All rights reserved.
+
+
+Connected to:
+Oracle Database 12c Enterprise Edition Release 12.1.0.2.0 - 64bit Production
+With the Partitioning, OLAP, Advanced Analytics and Real Application Testing options
+
+SQL> shu immediate;
+Database closed.
+Database dismounted.
+ORACLE instance shut down.
+SQL>
+SQL> startup mount;
+ORACLE instance started.
+
+Total System Global Area  893386752 bytes
+Fixed Size                  2930560 bytes
+Variable Size             834668672 bytes
+Database Buffers           50331648 bytes
+Redo Buffers                5455872 bytes
+Database mounted.
+SQL>
+SQL> alter database archivelog;
+
+Database altered.
+
+SQL> archive log list;
+Database log mode              Archive Mode
+Automatic archival             Enabled
+Archive destination            USE_DB_RECOVERY_FILE_DEST
+Oldest online log sequence     47
+Next log sequence to archive   50
+Current log sequence           50
+SQL>
+SQL> alter database open;
+
+Database altered.
+
+SQL>
+
+
+
+
+
+
+RMAN> backup database;
+
+Starting backup at 20-NOV-21
+using target database control file instead of recovery catalog
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=46 device type=DISK
+RMAN-00571: ===========================================================
+RMAN-00569: =============== ERROR MESSAGE STACK FOLLOWS ===============
+RMAN-00571: ===========================================================
+RMAN-03002: failure of backup command at 11/20/2021 12:04:51
+RMAN-06149: cannot BACKUP DATABASE in NOARCHIVELOG mode
+
+RMAN>
+
+
+
+====================================
+%T  ===> Timestamp 
+%d  ===> Database NAME
+%U ====> Unique Identification
+
+
+
+RMAN> show all;
+
+using target database control file instead of recovery catalog
+RMAN configuration parameters for database with db_unique_name ORBIT are:
+CONFIGURE RETENTION POLICY TO REDUNDANCY 1; # default
+CONFIGURE BACKUP OPTIMIZATION OFF; # default
+CONFIGURE DEFAULT DEVICE TYPE TO DISK; # default
+CONFIGURE CONTROLFILE AUTOBACKUP OFF; # default
+CONFIGURE CONTROLFILE AUTOBACKUP FORMAT FOR DEVICE TYPE DISK TO '%F'; # default
+CONFIGURE DEVICE TYPE DISK PARALLELISM 1 BACKUP TYPE TO BACKUPSET; # default
+CONFIGURE DATAFILE BACKUP COPIES FOR DEVICE TYPE DISK TO 1; # default
+CONFIGURE ARCHIVELOG BACKUP COPIES FOR DEVICE TYPE DISK TO 1; # default
+CONFIGURE MAXSETSIZE TO UNLIMITED; # default
+CONFIGURE ENCRYPTION FOR DATABASE OFF; # default
+CONFIGURE ENCRYPTION ALGORITHM 'AES128'; # default
+CONFIGURE COMPRESSION ALGORITHM 'BASIC' AS OF RELEASE 'DEFAULT' OPTIMIZE FOR LOAD TRUE ; # default
+CONFIGURE RMAN OUTPUT TO KEEP FOR 7 DAYS; # default
+CONFIGURE ARCHIVELOG DELETION POLICY TO NONE; # default
+CONFIGURE SNAPSHOT CONTROLFILE NAME TO '/u01/app/oracle/product/dbs/snapcf_ORBIT.f'; # default
+
+RMAN>
+
+RMAN>
+
+
+
+
+RMAN> report schema;
+
+Report of database schema for database with db_unique_name ORBIT
+
+List of Permanent Datafiles
+===========================
+File Size(MB) Tablespace           RB segs Datafile Name
+---- -------- -------------------- ------- ------------------------
+1    800      SYSTEM               YES     /oradata/ORBIT/system01.dbf
+2    10       OGGTBS               NO      /oradata/ORBIT/oggtbs02.dbf
+3    720      SYSAUX               NO      /oradata/ORBIT/sysaux01.dbf
+4    60       UNDOTBS1             YES     /oradata/ORBIT/undotbs01.dbf
+5    1024     OGGTBS               NO      /oradata/ORBIT/oggtbs01.dbf
+6    32       USERS                NO      /oradata/ORBIT/users01.dbf
+7    10       OGGTBS               NO      /oradata/ORBIT/ORBIT/datafile/o1_mf_oggtbs_jrhsy48y_.dbf
+8    10       ICON                 NO      /oradata/ORBIT/icon02
+9    1024     ICON                 NO      /oradata/ORBIT/icon02.dbf
+10   10       ICON                 NO      /oradata/ORBIT/icon03.dbf
+
+List of Temporary Files
+=======================
+File Size(MB) Tablespace           Maxsize(MB) Tempfile Name
+---- -------- -------------------- ----------- --------------------
+1    60       TEMP                 32767       /oradata/ORBIT/temp01.dbf
+2    10       TEMP                 10          /u01/app/oracle/temp02.dbf
+3    10       TEMP                 31744       /u01/app/oracle/temp03.dbf
+
+RMAN>
+
+
+
+
+RMAN> backup current controlfile format '/u01/rmanbkp/Ctl_%t_%d.bkp';
+
+Starting backup at 20-NOV-21
+using target database control file instead of recovery catalog
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=43 device type=DISK
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+including current control file in backup set
+channel ORA_DISK_1: starting piece 1 at 20-NOV-21
+channel ORA_DISK_1: finished piece 1 at 20-NOV-21
+piece handle=/u01/rmanbkp/Ctl_1089115916_ORBIT.bkp tag=TAG20211120T121156 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:02
+Finished backup at 20-NOV-21
+
+RMAN> 
+
+
+
+
+
+RMAN> backup datafile 5,6 format '/u01/rmanbkp/Datafile_%T_%D.bkp';
+
+Starting backup at 20-NOV-21
+using channel ORA_DISK_1
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+input datafile file number=00005 name=/oradata/ORBIT/oggtbs01.dbf
+input datafile file number=00006 name=/oradata/ORBIT/users01.dbf
+channel ORA_DISK_1: starting piece 1 at 20-NOV-21
+channel ORA_DISK_1: finished piece 1 at 20-NOV-21
+piece handle=/u01/rmanbkp/Datafile_20211120_20.bkp tag=TAG20211120T121609 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:01
+Finished backup at 20-NOV-21
+
+RMAN> exit
+
+
+
+RMAN>  backup datafile 5,6 format '/u01/rmanbkp/Datafile_%T_%d_%U.bkp';
+
+Starting backup at 20-NOV-21
+using target database control file instead of recovery catalog
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=51 device type=DISK
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+input datafile file number=00005 name=/oradata/ORBIT/oggtbs01.dbf
+input datafile file number=00006 name=/oradata/ORBIT/users01.dbf
+channel ORA_DISK_1: starting piece 1 at 20-NOV-21
+channel ORA_DISK_1: finished piece 1 at 20-NOV-21
+piece handle=/u01/rmanbkp/Datafile_20211120_ORBIT_030el632_1_1.bkp tag=TAG20211120T121738 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:01
+Finished backup at 20-NOV-21
+
+RMAN>
+
+
+
+RMAN> backup database format '/u01/rmanbkp/Full_%T_%d_%U.bkp';
+
+Starting backup at 20-NOV-21
+using channel ORA_DISK_1
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+input datafile file number=00005 name=/oradata/ORBIT/oggtbs01.dbf
+input datafile file number=00009 name=/oradata/ORBIT/icon02.dbf
+input datafile file number=00001 name=/oradata/ORBIT/system01.dbf
+input datafile file number=00003 name=/oradata/ORBIT/sysaux01.dbf
+input datafile file number=00004 name=/oradata/ORBIT/undotbs01.dbf
+input datafile file number=00006 name=/oradata/ORBIT/users01.dbf
+input datafile file number=00002 name=/oradata/ORBIT/oggtbs02.dbf
+input datafile file number=00007 name=/oradata/ORBIT/ORBIT/datafile/o1_mf_oggtbs_jrhsy48y_.dbf
+input datafile file number=00008 name=/oradata/ORBIT/icon02
+input datafile file number=00010 name=/oradata/ORBIT/icon03.dbf
+channel ORA_DISK_1: starting piece 1 at 20-NOV-21
+channel ORA_DISK_1: finished piece 1 at 20-NOV-21
+piece handle=/u01/rmanbkp/Full_20211120_ORBIT_040el66e_1_1.bkp tag=TAG20211120T121926 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:25
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+including current control file in backup set
+including current SPFILE in backup set
+channel ORA_DISK_1: starting piece 1 at 20-NOV-21
+channel ORA_DISK_1: finished piece 1 at 20-NOV-21
+piece handle=/u01/rmanbkp/Full_20211120_ORBIT_050el677_1_1.bkp tag=TAG20211120T121926 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:01
+Finished backup at 20-NOV-21
+
+RMAN>
+
+
+
+
+
+RMAN> backup spfile format '/u01/rmanbkp/Para_%T_%d_%U.bkp';
+
+Starting backup at 20-NOV-21
+using channel ORA_DISK_1
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+including current SPFILE in backup set
+channel ORA_DISK_1: starting piece 1 at 20-NOV-21
+channel ORA_DISK_1: finished piece 1 at 20-NOV-21
+piece handle=/u01/rmanbkp/Para_20211120_ORBIT_060el6a0_1_1.bkp tag=TAG20211120T122120 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:01
+Finished backup at 20-NOV-21
+
+RMAN>
+
+
+
+
+run
+{
+allocate channel c1 device type disk;
+backup spfile format '/u02/rmanbkp/Para_%T_%d_%U.bkp';
+backup database format '/u02/rmanbkp/Full_%T_%d_%U.bkp';
+backup current controlfile format '/u02/rmanbkp/Ctl_%t_%d.bkp';
+backup archivelog all format '/u02/rmanbkp/log_%T_%d_%U.bkp';
+release channel c1;
+}
+
+
+
+RMAN> run
+{
+allocate channel c1 device type disk;
+backup spfile format '/u01/rmanbkp/Para_%T_%d_%U.bkp';
+backup database format '/u01/rmanbkp/Full_%T_%d_%U.bkp';
+backup current controlfile format '/u01/rmanbkp/Ctl_%t_%d.bkp';
+release channel c1;
+}2> 3> 4> 5> 6> 7> 8>
+
+using target database control file instead of recovery catalog
+allocated channel: c1
+channel c1: SID=1 device type=DISK
+
+Starting backup at 20-NOV-21
+channel c1: starting full datafile backup set
+channel c1: specifying datafile(s) in backup set
+including current SPFILE in backup set
+channel c1: starting piece 1 at 20-NOV-21
+channel c1: finished piece 1 at 20-NOV-21
+piece handle=/u01/rmanbkp/Para_20211120_ORBIT_070el6h1_1_1.bkp tag=TAG20211120T122505 comment=NONE
+channel c1: backup set complete, elapsed time: 00:00:01
+Finished backup at 20-NOV-21
+
+Starting backup at 20-NOV-21
+channel c1: starting full datafile backup set
+channel c1: specifying datafile(s) in backup set
+input datafile file number=00005 name=/oradata/ORBIT/oggtbs01.dbf
+input datafile file number=00009 name=/oradata/ORBIT/icon02.dbf
+input datafile file number=00001 name=/oradata/ORBIT/system01.dbf
+input datafile file number=00003 name=/oradata/ORBIT/sysaux01.dbf
+input datafile file number=00004 name=/oradata/ORBIT/undotbs01.dbf
+input datafile file number=00006 name=/oradata/ORBIT/users01.dbf
+input datafile file number=00002 name=/oradata/ORBIT/oggtbs02.dbf
+input datafile file number=00007 name=/oradata/ORBIT/ORBIT/datafile/o1_mf_oggtbs_jrhsy48y_.dbf
+input datafile file number=00008 name=/oradata/ORBIT/icon02
+input datafile file number=00010 name=/oradata/ORBIT/icon03.dbf
+channel c1: starting piece 1 at 20-NOV-21
+channel c1: finished piece 1 at 20-NOV-21
+piece handle=/u01/rmanbkp/Full_20211120_ORBIT_080el6h2_1_1.bkp tag=TAG20211120T122506 comment=NONE
+channel c1: backup set complete, elapsed time: 00:00:46
+channel c1: starting full datafile backup set
+channel c1: specifying datafile(s) in backup set
+including current control file in backup set
+including current SPFILE in backup set
+channel c1: starting piece 1 at 20-NOV-21
+channel c1: finished piece 1 at 20-NOV-21
+piece handle=/u01/rmanbkp/Full_20211120_ORBIT_090el6ig_1_1.bkp tag=TAG20211120T122506 comment=NONE
+channel c1: backup set complete, elapsed time: 00:00:01
+Finished backup at 20-NOV-21
+
+Starting backup at 20-NOV-21
+channel c1: starting full datafile backup set
+channel c1: specifying datafile(s) in backup set
+including current control file in backup set
+channel c1: starting piece 1 at 20-NOV-21
+channel c1: finished piece 1 at 20-NOV-21
+piece handle=/u01/rmanbkp/Ctl_1089116755_ORBIT.bkp tag=TAG20211120T122555 comment=NONE
+channel c1: backup set complete, elapsed time: 00:00:01
+Finished backup at 20-NOV-21
+
+released channel: c1
+
+RMAN>
+
+
+
+
+
+Inorder to get log add tee 
+
+
+
+[oracle@iconic rmanbkp]$ rman target / | tee /u01/rmanbkp/backup.log
+
+Recovery Manager: Release 12.1.0.2.0 - Production on Sat Nov 20 12:27:16 2021
+
+Copyright (c) 1982, 2014, Oracle and/or its affiliates.  All rights reserved.
+
+connected to target database: ORBIT (DBID=138145042)
+
+RMAN> backup current controlfile;
+
+Starting backup at 20-NOV-21
+using target database control file instead of recovery catalog
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=51 device type=DISK
+channel ORA_DISK_1: starting full datafile backup set
+channel ORA_DISK_1: specifying datafile(s) in backup set
+including current control file in backup set
+channel ORA_DISK_1: starting piece 1 at 20-NOV-21
+channel ORA_DISK_1: finished piece 1 at 20-NOV-21
+piece handle=/u01/app/oracle/base/fast_recovery_area/ORBIT/backupset/2021_11_20/o1_mf_ncnnf_TAG20211120T122736_jsk731v9_.bkp tag=TAG20211120T122736 comment=NONE
+channel ORA_DISK_1: backup set complete, elapsed time: 00:00:01
+Finished backup at 20-NOV-21
+
+RMAN> exit
+
+
+Recovery Manager complete.
+[oracle@iconic rmanbkp]$
+[oracle@iconic rmanbkp]$
+
+
+
+
+
+
+run
+{
+allocate channel c1 device type disk;
+allocate channel c2 device type disk;
+backup spfile format '/u01/rmanbkp/Para_%T_%d_%U.bkp';
+backup database format '/u01/rmanbkp/Full_%T_%d_%U.bkp';
+backup current controlfile format '/u01/rmanbkp/Ctl_%t_%d.bkp';
+release channel c1;
+release channel c2;
+}
+
+
+
+
+
+
+
+
+RMAN> run
+{
+2> 3> allocate channel c1 device type disk;
+allocate channel c2 device type disk;
+backup spfile format '/u01/rmanbkp/Para_%T_%d_%U.bkp';
+backup database format '/u01/rmanbkp/Full_%T_%d_%U.bkp';
+backup current controlfile format '/u01/rmanbkp/Ctl_%t_%d.bkp';
+release channel c1;
+release channel c2;
+}4> 5> 6> 7> 8> 9> 10>
+
+using target database control file instead of recovery catalog
+allocated channel: c1
+channel c1: SID=51 device type=DISK
+
+allocated channel: c2
+channel c2: SID=52 device type=DISK
+
+Starting backup at 20-NOV-21
+channel c1: starting full datafile backup set
+channel c1: specifying datafile(s) in backup set
+including current SPFILE in backup set
+channel c1: starting piece 1 at 20-NOV-21
+channel c1: finished piece 1 at 20-NOV-21
+piece handle=/u01/rmanbkp/Para_20211120_ORBIT_0c0el6uu_1_1.bkp tag=TAG20211120T123230 comment=NONE
+channel c1: backup set complete, elapsed time: 00:00:01
+Finished backup at 20-NOV-21
+
+Starting backup at 20-NOV-21
+channel c1: starting full datafile backup set
+channel c1: specifying datafile(s) in backup set
+input datafile file number=00005 name=/oradata/ORBIT/oggtbs01.dbf
+input datafile file number=00001 name=/oradata/ORBIT/system01.dbf
+input datafile file number=00002 name=/oradata/ORBIT/oggtbs02.dbf
+input datafile file number=00007 name=/oradata/ORBIT/ORBIT/datafile/o1_mf_oggtbs_jrhsy48y_.dbf
+input datafile file number=00010 name=/oradata/ORBIT/icon03.dbf
+channel c1: starting piece 1 at 20-NOV-21
+channel c2: starting full datafile backup set
+channel c2: specifying datafile(s) in backup set
+input datafile file number=00009 name=/oradata/ORBIT/icon02.dbf
+input datafile file number=00003 name=/oradata/ORBIT/sysaux01.dbf
+input datafile file number=00004 name=/oradata/ORBIT/undotbs01.dbf
+input datafile file number=00006 name=/oradata/ORBIT/users01.dbf
+input datafile file number=00008 name=/oradata/ORBIT/icon02
+channel c2: starting piece 1 at 20-NOV-21
+channel c1: finished piece 1 at 20-NOV-21
+piece handle=/u01/rmanbkp/Full_20211120_ORBIT_0d0el6v0_1_1.bkp tag=TAG20211120T123231 comment=NONE
+channel c1: backup set complete, elapsed time: 00:00:35
+channel c1: starting full datafile backup set
+channel c1: specifying datafile(s) in backup set
+channel c2: finished piece 1 at 20-NOV-21
+piece handle=/u01/rmanbkp/Full_20211120_ORBIT_0e0el6v0_1_1.bkp tag=TAG20211120T123231 comment=NONE
+channel c2: backup set complete, elapsed time: 00:00:35
+channel c2: starting full datafile backup set
+channel c2: specifying datafile(s) in backup set
+including current SPFILE in backup set
+channel c2: starting piece 1 at 20-NOV-21
+including current control file in backup set
+channel c1: starting piece 1 at 20-NOV-21
+channel c1: finished piece 1 at 20-NOV-21
+piece handle=/u01/rmanbkp/Full_20211120_ORBIT_0f0el703_1_1.bkp tag=TAG20211120T123231 comment=NONE
+channel c1: backup set complete, elapsed time: 00:00:01
+channel c2: finished piece 1 at 20-NOV-21
+piece handle=/u01/rmanbkp/Full_20211120_ORBIT_0g0el704_1_1.bkp tag=TAG20211120T123231 comment=NONE
+channel c2: backup set complete, elapsed time: 00:00:01
+Finished backup at 20-NOV-21
+
+Starting backup at 20-NOV-21
+channel c1: starting full datafile backup set
+channel c1: specifying datafile(s) in backup set
+including current control file in backup set
+channel c1: starting piece 1 at 20-NOV-21
+channel c1: finished piece 1 at 20-NOV-21
+piece handle=/u01/rmanbkp/Ctl_1089117189_ORBIT.bkp tag=TAG20211120T123309 comment=NONE
+channel c1: backup set complete, elapsed time: 00:00:01
+Finished backup at 20-NOV-21
+
+released channel: c1
+
+released channel: c2
+
+RMAN>
